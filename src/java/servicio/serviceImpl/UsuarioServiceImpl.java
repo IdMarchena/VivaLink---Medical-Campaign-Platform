@@ -10,6 +10,7 @@ import repositorio.RolRepository;
 import modelo.Usuario;
 
 public class UsuarioServiceImpl implements UsuarioService{
+    
     private final RolRepository rolRepositorio= new RolRepository();
     private final UsuarioRepository usuarioRepository= new UsuarioRepository();
     private final UsuarioMapper usuarioMapper = new UsuarioMapper();
