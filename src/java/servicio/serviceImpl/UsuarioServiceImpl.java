@@ -1,6 +1,7 @@
 package servicio.serviceImpl;
 
 import dto.UsuarioDto;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import servicio.service.UsuarioService;
@@ -11,9 +12,14 @@ import modelo.Usuario;
 
 public class UsuarioServiceImpl implements UsuarioService{
     
-    private final RolRepository rolRepositorio= new RolRepository();
-    private final UsuarioRepository usuarioRepository= new UsuarioRepository();
-    private final UsuarioMapper usuarioMapper = new UsuarioMapper();
+    private final RolRepository rolRepositorio;
+    private final UsuarioRepository usuarioRepository;
+    private final UsuarioMapper usuarioMapper;
+    public UsuarioServiceImpl() throws SQLException{
+        this.rolRepositorio = new RolRepository();
+        this.usuarioRepository = new UsuarioRepository();
+        this.usuarioMapper = new UsuarioMapper();
+    }
     @Override
     public void crearUsuario(UsuarioDto dto) {
         if(dto!=null){
