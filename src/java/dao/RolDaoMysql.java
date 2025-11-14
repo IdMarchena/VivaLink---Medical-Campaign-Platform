@@ -4,6 +4,7 @@
  */
 package dao;
 
+import dao.connection.DataBaseConnection;
 import java.sql.Connection;
 import java.util.List;
 

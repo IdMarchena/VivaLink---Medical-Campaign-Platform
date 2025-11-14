@@ -9,7 +9,6 @@ import mapper.UsuarioMapper;
 import repositorio.UsuarioRepository;
 import repositorio.RolRepository;
 import modelo.Usuario;
-
 public class UsuarioServiceImpl implements UsuarioService{
     
     private final RolRepository rolRepositorio;
@@ -26,7 +25,10 @@ public class UsuarioServiceImpl implements UsuarioService{
             Usuario usuario=usuarioMapper.toEntity(dto);
             int idRol=rolRepositorio.buscarIdPorNombreRol(usuario.get_rol());
             if(idRol!=0){
-                usuarioRepository.guardar(usuario, idRol);
+                if(usuarioRepository.verificarSiUsuarioExiste(usuario.get_id())){
+                } else{
+                    usuarioRepository.guardar(usuario, idRol);
+                }
             }
         }
     }
@@ -91,6 +93,17 @@ public class UsuarioServiceImpl implements UsuarioService{
     @Override
     public String buscarNombreRolPorIdRol(int id){
         return rolRepositorio.buscarNombreRolPorIdRol(id);
+    }
+    @Override
+    public boolean VerificarUsuarioPorNombreYRol(String nombre,String rol){
+        boolean bandera = false;
+        Usuario user = usuarioRepository.buscarUsuarioPorNombre(nombre);
+        if(user!=null){
+            if(user.get_rol().equals(rol)){
+                bandera=true;
+            }
+        }
+        return bandera;
     }
     
 }

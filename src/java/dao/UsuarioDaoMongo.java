@@ -4,6 +4,7 @@
  */
 package dao;
 
+import dao.connection.DataBaseConnection;
 import java.util.List;
 import modelo.Usuario;
 import java.sql.Connection;
@@ -49,6 +50,11 @@ public class UsuarioDaoMongo implements UsurioDao{
 
     @Override
     public void eliminarUsuario(int id) {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public Usuario buscarUsuarioPorNombre(String nombre) {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
     

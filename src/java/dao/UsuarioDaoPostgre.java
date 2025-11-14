@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import modelo.Usuario;
-import dao.DataBaseConnection;
+import dao.connection.DataBaseConnection;
 
 /**
  *
@@ -175,6 +175,33 @@ public class UsuarioDaoPostgre implements UsurioDao{
             } catch(SQLException e){
                 throw new RuntimeException("el usuario no pudo ser eliminado de la base de datos"+e.getMessage()+e);
             }
+        }
+    }
+
+    @Override
+    public Usuario buscarUsuarioPorNombre(String nombre) {
+        Usuario user = new Usuario();
+        String sql="""
+                SELECT u.id, u.nombre, u.correo, u.contrasenia, r.nombre AS rol
+                FROM usuarios u
+                JOIN roles r ON u.idRol=r.id
+                WHERE LOWER(u.nombre)=LOWER(?)
+                """;
+        try(
+            PreparedStatement ps = conn.prepareStatement(sql)){
+            ps.setString(1, nombre);
+            ResultSet rs= ps.executeQuery();
+            while(rs.next()){
+                user.set_id(rs.getInt("id"));
+                user.set_nombre(rs.getString("nombre"));
+                user.set_correo(rs.getString("correo"));
+                user.set_contrasenia(rs.getString("contrasenia"));
+                user.set_rol(rs.getString("rol"));
+            }
+            return user;
+        } catch(SQLException e ){
+            throw new RuntimeException("no se encontraron usuarios con ese rol"+e.getMessage()+e);
+                    
         }
     }
     

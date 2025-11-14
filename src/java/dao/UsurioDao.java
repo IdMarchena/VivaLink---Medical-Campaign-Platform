@@ -19,6 +19,7 @@ public interface UsurioDao {
     List<Usuario> listarTodosLosUsuarios();
     void actualizarUsuario(int id, Usuario usuario, int idRol);
     void eliminarUsuario(int id);
+    Usuario buscarUsuarioPorNombre(String nombre);
     
     
 }

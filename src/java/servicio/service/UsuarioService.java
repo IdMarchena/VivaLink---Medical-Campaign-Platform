@@ -12,4 +12,5 @@ public interface UsuarioService {
     int buscarIdRolPorNombre(String nombre);
     String buscarNombreRolPorIdRol(int id);
     List<UsuarioDto> buscaUsuariosPorRol(String rol);
+    boolean VerificarUsuarioPorNombreYRol(String nombre, String rol);
 }

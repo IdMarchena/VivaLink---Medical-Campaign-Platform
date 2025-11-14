@@ -2,8 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dao;
+package dao.connection;
 
+import dao.connection.DataBaseConnection;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -23,8 +24,7 @@ public class MySqlConnection implements DataBaseConnection{
     public static Connection conexion() throws SQLException {
         try {
             Class.forName("org.postgresql.Driver");
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
         }
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }

@@ -4,17 +4,11 @@
  */
 package repositorio;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.PreparedStatement;
 import modelo.Usuario;
-import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.List;
-import dao.UsuarioDaoPostgre;
 import dao.UsurioDao;
-import dao.DaoFactory;
+import factory.DaoFactory;
 
 /**
  *
@@ -27,6 +21,9 @@ public class UsuarioRepository {
     }
     public Usuario buscarPorId(int id){
         return usuarioDao.buscarPorId(id);
+    }
+    public boolean verificarSiUsuarioExiste(int id){
+        return usuarioDao.verificarSiUsuarioExiste(id);
     }
 
     public void guardar(Usuario usuario,int idRol){
@@ -46,4 +43,8 @@ public class UsuarioRepository {
     public void eliminarUsuario(int id){
         usuarioDao.eliminarUsuario(id);
     }
+    public Usuario buscarUsuarioPorNombre(String nombre){
+        return usuarioDao.buscarUsuarioPorNombre(nombre);
+    }
+    
 }
