@@ -1,4 +1,5 @@
 package presentacion;
+
 import servicio.service.UsuarioService;
 import servicio.serviceImpl.UsuarioServiceImpl;
 import dto.UsuarioDto;
@@ -9,7 +10,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.Gson;
 
@@ -18,282 +18,176 @@ public class UsuarioServlet extends HttpServlet {
 
     private final UsuarioService usuarioService;
     private final Gson gson;
-    
-    public UsuarioServlet(UsuarioServiceImpl usuarioServiceImpl) throws SQLException{
-        this.usuarioService= new UsuarioServiceImpl();
-        this.gson=new Gson();
+
+    public UsuarioServlet() throws SQLException {
+        this.usuarioService = new UsuarioServiceImpl();
+        this.gson = new Gson();
     }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String action = request.getParameter("action");
-        System.out.println("esta es la accion que lleog"+action);
-        
+        System.out.println("Acción recibida: " + action);
+
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        if ("crear".equals(action)) {
-            crearUsuario(request, response);
-        } else if ("listar".equals(action)) {
-            listarUsuarios(request, response);
-        } else if ("buscar".equals(action)) {
-            buscarUsuario(request, response);
-        } else if ("actualizar".equals(action)) {
-            actualizarUsuario(request, response);
-        } else if ("eliminar".equals(action)) {
-            eliminarUsuario(request, response);
-        } else if ("listarRoles".equals(action)){
-            verListaRoles(request,response);
-        } else if("editar".equals(action)){
-            editarUsuario(request,response);
-        } else if("buscarUsuarioPorRol".equals(action)){
-            buscarUsuarioPorRol(request,response);
-        } else if("buscarUsuarioPorRol".equals(action)){
-            buscarUsuarioPorRol(request,response);
-        } else if("verificarUsuarioPorNombreYrol".equals(action)){
-        
-        }else {
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    false,
-                    "accion no reconocida: "+ action,
-                    null,
-                    HttpServletResponse.SC_BAD_REQUEST
-            );
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write(gson.toJson(jsonResponse));
+        switch (action) {
+            case "crear" -> crearUsuario(request, response);
+            case "listar" -> listarUsuarios(request, response);
+            case "buscar" -> buscarUsuario(request, response);
+            case "actualizar" -> actualizarUsuario(request, response);
+            case "eliminar" -> eliminarUsuario(request, response);
+            case "listarRoles" -> listarRoles(request, response);
+            case "buscarUsuarioPorRol" -> buscarUsuarioPorRol(request, response);
+            case "verificarUsuarioPorNombreYrol" -> verificarUsuarioPorNombreYRol(request, response);
+            default -> {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write(gson.toJson("Acción no reconocida: " + action));
+            }
         }
     }
-    private void verificarUsuarioPorNombreYrol(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+    private void crearUsuario(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String nombre = request.getParameter("nombre");
+        String correo = request.getParameter("correo");
+        String contrasenia = request.getParameter("contrasenia");
+        String rol = request.getParameter("rol");
+
+        if (nombre == null || correo == null || contrasenia == null || rol == null) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(gson.toJson("Todos los campos son requeridos"));
+            return;
+        }
+
+        UsuarioDto usuario = new UsuarioDto(0, nombre, correo, contrasenia, rol);
+
+        try {
+            usuarioService.crearUsuario(usuario);
+            response.setStatus(HttpServletResponse.SC_CREATED);
+            response.getWriter().write(gson.toJson("Usuario creado con éxito"));
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write(gson.toJson("Error al crear usuario: " + e.getMessage()));
+        }
+    }
+
+    private void listarUsuarios(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        try {
+            List<UsuarioDto> usuarios = usuarioService.listarUsuarios();
+            response.getWriter().write(gson.toJson(usuarios));
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write(gson.toJson("Error al listar usuarios: " + e.getMessage()));
+        }
+    }
+
+    private void buscarUsuario(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String idStr = request.getParameter("id");
+
+        if (idStr == null || idStr.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(gson.toJson("Parámetro id requerido"));
+            return;
+        }
+
+        try {
+            int id = Integer.parseInt(idStr);
+            UsuarioDto usuario = usuarioService.buscarUsuarioPorId(id);
+
+            if (usuario != null) {
+                response.getWriter().write(gson.toJson(usuario));
+            } else {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write(gson.toJson("Usuario no encontrado"));
+            }
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(gson.toJson("ID inválido"));
+        }
+    }
+
+    private void actualizarUsuario(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String idStr = request.getParameter("id");
+
+        if (idStr == null || idStr.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(gson.toJson("Parámetro id requerido"));
+            return;
+        }
+
+        try {
+            int id = Integer.parseInt(idStr);
+            String nombre = request.getParameter("nombre");
+            String correo = request.getParameter("correo");
+            String contrasenia = request.getParameter("contrasenia");
+            String rol = request.getParameter("rol");
+
+            UsuarioDto usuario = new UsuarioDto(id, nombre, correo, contrasenia, rol);
+
+            usuarioService.actualizarUsuario(id, usuario);
+            response.getWriter().write(gson.toJson("Usuario actualizado con éxito"));
+
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(gson.toJson("ID inválido"));
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write(gson.toJson("Error al actualizar usuario: " + e.getMessage()));
+        }
+    }
+
+    private void eliminarUsuario(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String idStr = request.getParameter("id");
+
+        try {
+            int id = Integer.parseInt(idStr);
+            try{
+                usuarioService.eliminarUsuario(id);
+                response.getWriter().write(gson.toJson("usuario eliminaod con exito"));
+            } catch (Exception e){
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("usuario no pudo ser encontrado por tanto no pudo ser eliminado");
+            }
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(gson.toJson("ID inválido"));
+        }
+    }
+
+    private void listarRoles(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        List<String> roles = usuarioService.listarRoles();
+        response.getWriter().write(gson.toJson(roles));
+    }
+
+    private void buscarUsuarioPorRol(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String rol = request.getParameter("rol");
+
+        if (rol == null || rol.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(gson.toJson("El rol es requerido"));
+            return;
+        }
+
+        List<UsuarioDto> usuarios = usuarioService.buscaUsuariosPorRol(rol);
+
+        if (usuarios.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write(gson.toJson("No existen usuarios con ese rol"));
+        } else {
+            response.getWriter().write(gson.toJson(usuarios));
+        }
+    }
+
+    private void verificarUsuarioPorNombreYRol(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String nombre = request.getParameter("nombre");
         String rol = request.getParameter("rol");
 
-        // Verificamos si el usuario y rol son válidos
-        boolean esValido = usuarioService.VerificarUsuarioPorNombreYRol(nombre, rol);
-        JsonResponse<Object> jsonResponse= new JsonResponse<>(
-                true,
-                "verificacion completada",
-                esValido,
-                HttpServletResponse.SC_OK
-        );
-        response.getWriter().write(gson.toJson(jsonResponse));
-    }
-    
-    private void verListaRoles(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        List<String> roles = new ArrayList<>();
-        roles=usuarioService.listarRoles();
-        JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                true,
-                "roles obtenidos exitosamente",
-                roles,
-                HttpServletResponse.SC_OK
-        );
-        response.getWriter().write(gson.toJson(jsonResponse));
-    }   
-    private void editarUsuario(HttpServletRequest request, HttpServletResponse response)
-        throws ServletException, IOException {
-        String idd = request.getParameter("id");
-        int id = Integer.parseInt(idd);
-        UsuarioDto usuario = usuarioService.buscarUsuarioPorId(id);
-        
-        if(usuario!=null){
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    true,
-                    "usuario editado exitosamente",
-                    usuario,
-                    HttpServletResponse.SC_NOT_FOUND
-            );
-            response.getWriter().write(gson.toJson(jsonResponse));
-        }else{
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    false,
-                    "usuario editado exitosamente",
-                    null,
-                    HttpServletResponse.SC_OK
-            );
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write(gson.toJson(jsonResponse));
-        }
+        boolean existe = usuarioService.VerificarUsuarioPorNombreYRol(nombre, rol);
+        response.getWriter().write(gson.toJson(existe));
     }
 
-
-
-
-    private void listarUsuarios(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        List<UsuarioDto> usuarios = usuarioService.listarUsuarios();
-        if(usuarios.isEmpty()){
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    true,
-                    "usuarios encontrados",
-                    usuarios,
-                    HttpServletResponse.SC_OK
-            );
-            response.getWriter().write(gson.toJson(jsonResponse));
-        } else {
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    false,
-                    "no se encontraron los usuarios",
-                    null,
-                    HttpServletResponse.SC_NOT_FOUND
-            );
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write(gson.toJson(jsonResponse));
-        }
-    }
-
-    private void buscarUsuario(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        System.out.println("este es el id del usuario a buscar "+request.getParameter("id"));
-        String idd = request.getParameter("id");
-        int id = Integer.parseInt(idd);
-        UsuarioDto usuario = usuarioService.buscarUsuarioPorId(id);
-        if (usuario != null) {
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    true,
-                    "usuario encontrado",
-                    usuario,
-                    HttpServletResponse.SC_OK
-            );
-            response.getWriter().write(gson.toJson(jsonResponse));
-        } else {
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    false,
-                    "usuario no encontrado",
-                    null,
-                    HttpServletResponse.SC_NOT_FOUND
-            );
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write(gson.toJson(jsonResponse));
-        }
-    }
-private void buscarUsuarioPorRol(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    String rol = request.getParameter("rol");
-    System.out.println("este es el rol que llego para ser buscado :  "+rol);
-    
-    if (rol != null && !rol.isEmpty()) {
-        List<UsuarioDto> usuarios = usuarioService.buscaUsuariosPorRol(rol); // Llama al servicio para buscar usuarios por rol
-        if (usuarios != null && !usuarios.isEmpty()) {
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    true,
-                    "usuario encontrado con rol",
-                    usuarios,
-                    HttpServletResponse.SC_OK
-            );
-            response.getWriter().write(gson.toJson(jsonResponse));
-        } else {
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    false,
-                    "usuario no encontrado",
-                    null,
-                    HttpServletResponse.SC_NOT_FOUND
-            );
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write(gson.toJson(jsonResponse));
-        }
-    } else {
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    false,
-                    "usuario no encontrado",
-                    null,
-                    HttpServletResponse.SC_NOT_FOUND
-            );
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write(gson.toJson(jsonResponse));
-    }
-}
-
-
-private void crearUsuario(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-    String nombre = request.getParameter("nombre");
-    String correo = request.getParameter("correo");
-    String contrasenia = request.getParameter("contrasenia");
-    String rol = request.getParameter("rol");
-
-    UsuarioDto usuarioDto = new UsuarioDto(0, nombre, correo, contrasenia, rol);
-    try {
-        usuarioService.crearUsuario(usuarioDto);
-        // Establecer el mensaje de éxito
-        JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                true,
-                "usuario creado con exito",
-                usuarioDto,
-                HttpServletResponse.SC_CREATED
-        );
-        response.getWriter().write(gson.toJson(jsonResponse));
-    } catch (IOException e) {
-        JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                false,
-                "usuario no encontrado",
-                null,
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR
-        );
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().write(gson.toJson(jsonResponse));
-    }
-}
-
-private void actualizarUsuario(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-    String idd = request.getParameter("id");
-    int id = Integer.parseInt(idd);
-    String nombre = request.getParameter("nombre");
-    String correo = request.getParameter("correo");
-    String contrasenia = request.getParameter("contrasenia");
-    String rol = request.getParameter("rol");
-    UsuarioDto usuarioDto = new UsuarioDto(id, nombre, correo, contrasenia, rol);
-    try {
-        usuarioService.actualizarUsuario(id, usuarioDto);
-        JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                true,
-                "usuario actualizado exitosamente",
-                null,
-                HttpServletResponse.SC_OK
-        );
-        response.getWriter().write(gson.toJson(jsonResponse));
-    } catch (IOException e) {
-        JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                false,
-                "usuario no actualizado",
-                null,
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR
-        );  
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().write(gson.toJson(jsonResponse));
-    }
-}
-
-private void eliminarUsuario(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-    try {
-        String idd = request.getParameter("id");
-        int id = Integer.parseInt(idd);
-        if (id != 0 && id > 0) {
-            usuarioService.eliminarUsuario(id);
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    true,
-                    "usuario eliminado exitosamente",
-                    null,
-                    HttpServletResponse.SC_OK
-            );
-            response.getWriter().write(gson.toJson(jsonResponse));
-        } else {
-            JsonResponse<Object> jsonResponse = new JsonResponse<>(
-                    false,
-                    "usuario no eliminado",
-                    null,
-                    HttpServletResponse.SC_BAD_REQUEST
-            );
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write(gson.toJson(jsonResponse));
-        }
-    } catch (IOException | NumberFormatException e) {
-        JsonResponse<Object> jsonResponse =new JsonResponse<>(
-                false,
-                "usuario no eliminado",
-                null,
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR
-        );
-        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        response.getWriter().write(gson.toJson(jsonResponse));
-    }
-}    
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -305,6 +199,4 @@ private void eliminarUsuario(HttpServletRequest request, HttpServletResponse res
             throws ServletException, IOException {
         processRequest(request, response);
     }
-
-
 }
