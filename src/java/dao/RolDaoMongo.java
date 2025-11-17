@@ -7,6 +7,8 @@ package dao;
 import dao.connection.DataBaseConnection;
 import java.sql.Connection;
 import dao.RolDao;
+import factory.DataBaseConnectionFactory;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -17,8 +19,9 @@ public class RolDaoMongo implements RolDao{
     private final Connection conn;
     
     
-    public RolDaoMongo(DataBaseConnection conn){
-        this.conn=(Connection) conn;
+    public RolDaoMongo(DataBaseConnection conn) throws SQLException{
+        DataBaseConnection db= DataBaseConnectionFactory.connection("mongo");
+        this.conn=db.getConnection();
     }
 
     @Override

@@ -5,7 +5,9 @@
 package dao;
 
 import dao.connection.DataBaseConnection;
+import factory.DataBaseConnectionFactory;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -14,8 +16,9 @@ import java.util.List;
  */
 public class RolDaoMysql implements RolDao {
     private final Connection conn;
-    public RolDaoMysql(DataBaseConnection conn){
-        this.conn=(Connection) conn;
+    public RolDaoMysql(DataBaseConnection conn) throws SQLException{
+                DataBaseConnection db= DataBaseConnectionFactory.connection("mysql");
+        this.conn=db.getConnection();
     }
     @Override
     public int buscarIdPorNombreRol(String nombre) {

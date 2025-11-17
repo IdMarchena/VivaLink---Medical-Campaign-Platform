@@ -5,7 +5,6 @@
 package dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import modelo.Usuario;
 import dao.connection.DataBaseConnection;
+import factory.DataBaseConnectionFactory;
 
 /**
  *
@@ -22,7 +22,8 @@ public class UsuarioDaoPostgre implements UsurioDao{
     private final Connection conn;
     
     public UsuarioDaoPostgre(DataBaseConnection conn) throws SQLException{
-        this.conn=(Connection) conn;
+                DataBaseConnection db= DataBaseConnectionFactory.connection("postgres");
+        this.conn=db.getConnection();
     }
     @Override
     public Usuario buscarPorId(int id){

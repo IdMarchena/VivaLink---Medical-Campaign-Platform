@@ -5,14 +5,9 @@
 package factory;
 import dao.RolDao;
 import dao.connection.DataBaseConnection;
-import dao.UsurioDao;
-import dao.UsuarioDaoPostgre;
-import dao.UsuarioDaoMongo;
 import java.sql.SQLException;
 import dao.RolDaoMongo;
-import dao.RolDaoMongo;
 import dao.RolDaoMysql;
-import dao.RolDaoPostgre;
 import dao.RolDaoPostgre;
 import dao.UsuarioDaoMongo;
 import dao.UsuarioDaoMySql;

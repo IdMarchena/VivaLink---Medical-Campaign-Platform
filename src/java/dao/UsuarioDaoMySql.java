@@ -5,9 +5,11 @@
 package dao;
 
 import dao.connection.DataBaseConnection;
+import factory.DataBaseConnectionFactory;
 import java.util.List;
 import modelo.Usuario;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  *
@@ -16,8 +18,9 @@ import java.sql.Connection;
 public class UsuarioDaoMySql implements UsurioDao {
     private final Connection conn;
     
-    public UsuarioDaoMySql(DataBaseConnection conn){
-        this.conn=(Connection) conn;
+    public UsuarioDaoMySql(DataBaseConnection conn) throws SQLException{
+                DataBaseConnection db= DataBaseConnectionFactory.connection("mysql");
+        this.conn=db.getConnection();
     }
     @Override
     public Usuario buscarPorId(int id) {

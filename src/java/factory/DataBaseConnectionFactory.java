@@ -16,12 +16,13 @@ import java.sql.SQLException;
 public class DataBaseConnectionFactory {
     public static DataBaseConnection connection(String tipoDb) throws SQLException{
         switch (tipoDb.toLowerCase()) {
-            case "postgre":
-                return (DataBaseConnection) PostgreConnection.conexion();
-            case "mysql":
-                return (DataBaseConnection) MySqlConnection.conexion();
-            default:
-                throw new AssertionError();
+            case "postgres" -> {
+                return new PostgreConnection();
+            }
+            case "mysql" -> {
+                return new MySqlConnection();
+            }
+            default -> throw new AssertionError();
         }
     }
     

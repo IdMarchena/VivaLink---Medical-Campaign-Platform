@@ -1,6 +1,5 @@
 
 package dao.connection;
-import dao.connection.DataBaseConnection;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -13,7 +12,7 @@ import java.util.logging.Logger;
 // dao/PostgreConnection.java
 public class PostgreConnection implements DataBaseConnection {
     private Connection connection;
-    private static final String URL="jdbc://postgresql://localhost:5432/UsuarioService";
+    private static final String URL="jdbc:postgresql://localhost:5432/UsuarioService";
     private static final String USER="postgres";
     private static final String PASSWORD="12345678";
 
@@ -27,7 +26,7 @@ public class PostgreConnection implements DataBaseConnection {
     }
 
     @Override
-    public Connection getConection() {
+    public Connection getConnection() {
         try {
             return conexion();
         } catch (SQLException ex) {

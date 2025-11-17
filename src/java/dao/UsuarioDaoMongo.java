@@ -5,9 +5,11 @@
 package dao;
 
 import dao.connection.DataBaseConnection;
+import factory.DataBaseConnectionFactory;
 import java.util.List;
 import modelo.Usuario;
 import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  *
@@ -15,8 +17,9 @@ import java.sql.Connection;
  */
 public class UsuarioDaoMongo implements UsurioDao{
     private final Connection conn;
-    public UsuarioDaoMongo(DataBaseConnection conn){
-        this.conn=(Connection) conn;
+    public UsuarioDaoMongo(DataBaseConnection conn) throws SQLException{
+                DataBaseConnection db= DataBaseConnectionFactory.connection("mongo");
+        this.conn=db.getConnection();
     }
     @Override
     public Usuario buscarPorId(int id) {

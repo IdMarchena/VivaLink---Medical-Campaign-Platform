@@ -11,7 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import dao.connection.DataBaseConnection;
-
+import factory.DataBaseConnectionFactory;
 /**
  *
  * @author Usuario
@@ -20,8 +20,9 @@ public class RolDaoPostgre implements RolDao {
     
     private  final Connection conn;
     
-    public RolDaoPostgre(DataBaseConnection conn){
-        this.conn=(Connection) conn;
+    public RolDaoPostgre(DataBaseConnection conn) throws SQLException{
+        DataBaseConnection db= DataBaseConnectionFactory.connection("postgres");
+        this.conn=db.getConnection();
     }
     @Override
     public int buscarIdPorNombreRol(String nombre){
